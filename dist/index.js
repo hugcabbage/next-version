@@ -2722,7 +2722,7 @@ exports["default"] = _default;
 
 /***/ }),
 
-/***/ 399:
+/***/ 144:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -2751,57 +2751,44 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = void 0;
-const core = __importStar(__nccwpck_require__(186));
-const wait_1 = __nccwpck_require__(259);
 /**
- * The main function for the action.
- * @returns {Promise<void>} Resolves when the action is complete.
+ * The entrypoint for the action.
  */
-async function run() {
-    try {
-        const ms = core.getInput('milliseconds');
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        core.debug(`Waiting ${ms} milliseconds ...`);
-        // Log the current timestamp, wait, then log the new timestamp
-        core.debug(new Date().toTimeString());
-        await (0, wait_1.wait)(parseInt(ms, 10));
-        core.debug(new Date().toTimeString());
-        // Set outputs for other workflow steps to use
-        core.setOutput('time', new Date().toTimeString());
-    }
-    catch (error) {
-        // Fail the workflow run if an error occurs
-        if (error instanceof Error)
-            core.setFailed(error.message);
-    }
-}
-exports.run = run;
+const core = __importStar(__nccwpck_require__(186));
+const main_1 = __nccwpck_require__(399);
+core.setOutput('version', (0, main_1.nextVersion)());
 
 
 /***/ }),
 
-/***/ 259:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ 399:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = void 0;
-/**
- * Wait for a number of milliseconds.
- * @param milliseconds The number of milliseconds to wait.
- * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
- */
-async function wait(milliseconds) {
-    return new Promise(resolve => {
-        if (isNaN(milliseconds)) {
-            throw new Error('milliseconds not a number');
+exports.nextVersion = void 0;
+const child_process_1 = __nccwpck_require__(81);
+function nextVersion() {
+    // Get all tags
+    const tags = (0, child_process_1.execSync)('git tag').toString().trim().split('\n');
+    if (tags.length === 0) {
+        // If there is no tag, return v1 as the next version number
+        return 'v1';
+    }
+    //Parse version number
+    let version = 0;
+    for (const tag of tags) {
+        const tagVersionStr = tag.replace('v', '');
+        const tagVersion = parseInt(tagVersionStr, 10);
+        if (!isNaN(tagVersion) && tagVersion > version) {
+            version = tagVersion;
         }
-        setTimeout(() => resolve('done!'), milliseconds);
-    });
+    }
+    version += 1;
+    return `v${version}`;
 }
-exports.wait = wait;
+exports.nextVersion = nextVersion;
 
 
 /***/ }),
@@ -2811,6 +2798,14 @@ exports.wait = wait;
 
 "use strict";
 module.exports = require("assert");
+
+/***/ }),
+
+/***/ 81:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("child_process");
 
 /***/ }),
 
@@ -2932,22 +2927,12 @@ module.exports = require("util");
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be in strict mode.
-(() => {
-"use strict";
-var exports = __webpack_exports__;
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-/**
- * The entrypoint for the action.
- */
-const main_1 = __nccwpck_require__(399);
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-(0, main_1.run)();
-
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(144);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;
