@@ -45,10 +45,19 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Test Local Action
-        id: test-action
+      - name: Test Local Action first
+        id: test-action-1
+        uses: ./
+        with:
+          prefix: 'w'
+          mode: 'long'
+
+      - name: Test Local Action second
+        id: test-action-2
         uses: ./
 
-      - name: Print Output
-        id: output
-        run: echo "${{ steps.test-action.outputs.version }}"
+      - name: Print Output first
+        run: echo "${{ steps.test-action-1.outputs.version }}"
+
+      - name: Print Output second
+        run: echo "${{ steps.test-action-2.outputs.version }}"

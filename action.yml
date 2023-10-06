@@ -2,6 +2,16 @@ name: 'next version'
 description: 'calculate next version number'
 author: 'hugcabbage'
 
+inputs:
+  prefix:
+    description: 'prefix of version number'
+    required: false
+    default: 'v'
+  mode:
+    description: 'version mode'
+    required: false
+    default: 'short'
+
 outputs:
   version:
     description: 'next version number'

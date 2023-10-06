@@ -1,25 +1,68 @@
 import { execSync } from 'child_process'
 
-export function nextVersion(): string {
-  // Get all tags
-  const tags = execSync('git tag').toString().trim().split('\n')
-
-  if (tags.length === 0) {
-    // If there is no tag, return v1 as the next version number
-    return 'v1'
+function vcalculate(version: string): string {
+  const version_parts = version.split('.').map(Number)
+  if (version_parts.length === 1) {
+    return String(version_parts[0] + 1)
   }
-
-  //Parse version number
-  let version = 0
-  const tagRegex = /^v\d+$/
-  for (const tag of tags) {
-    if (tagRegex.test(tag)) {
-      const tagVersion = parseInt(tag.replace('v', ''), 10)
-      if (!isNaN(tagVersion) && tagVersion > version) {
-        version = tagVersion
-      }
+  if (version_parts.slice(1).some(x => x > 9)) {
+    throw new Error('Invalid version number')
+  }
+  version_parts[version_parts.length - 1] += 1
+  for (let i = version_parts.length - 1; i > 0; i--) {
+    if (version_parts[i] > 9) {
+      version_parts[i] = 0
+      version_parts[i - 1] += 1
     }
   }
-  version += 1
-  return `v${version}`
+  return version_parts.join('.')
+}
+
+export function nextVersion(prefix = 'v', mode = 'short'): string {
+  const tags = execSync('git ls-remote --tags --refs origin', {
+    encoding: 'utf8'
+  })
+    .trim()
+    .split('\n')
+
+  if (tags.length === 0) {
+    if (mode === 'medium') {
+      return `${prefix}0.1`
+    }
+    if (mode === 'long') {
+      return `${prefix}0.0.1`
+    }
+    return `${prefix}1`
+  }
+
+  let version: number[]
+  if (mode === 'medium') {
+    version = [0, 0]
+  } else if (mode === 'long') {
+    version = [0, 0, 0]
+  } else {
+    version = [0]
+  }
+
+  for (const tag of tags) {
+    const regex = new RegExp(`^${prefix}`)
+    const mtag = tag.split('/').slice(-1)[0].replace(regex, '')
+    try {
+      const mtag_parts = mtag.split('.').map(Number)
+      if (mtag_parts.length !== version.length) {
+        continue
+      }
+      if (mtag_parts.some(x => isNaN(x))) {
+        continue
+      }
+      if (mtag_parts > version) {
+        version = mtag_parts
+      }
+    } catch (err) {
+      continue
+    }
+  }
+
+  const version_str = version.join('.')
+  return `${prefix}${vcalculate(version_str)}`
 }
