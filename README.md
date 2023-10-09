@@ -18,6 +18,7 @@ Create a workflow `.yml` file in your repository's `.github/workflows` directory
 
 * `prefix` - A prefix. Required: `false`, Default: `v`.
 * `mode` - There are three modes, `short`, `medium`, `long`. Required: `false`, Default: `short`.
+* `repo_path` - The path where the repository is. Required: `false`, Default: `.`.
 
 ### Outputs
 

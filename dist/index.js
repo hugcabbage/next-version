@@ -2758,6 +2758,8 @@ const core = __importStar(__nccwpck_require__(186));
 const main_1 = __nccwpck_require__(399);
 const prefix = core.getInput('prefix');
 const mode = core.getInput('mode');
+const repo_path = core.getInput('repo_path');
+process.chdir(repo_path);
 core.setOutput('version', (0, main_1.nextVersion)(prefix, mode));
 
 

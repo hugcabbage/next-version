@@ -36,7 +36,7 @@ jobs:
         id: npm-lint
         run: npm run lint
 
-  test-action:
+  test-base:
     name: GitHub Actions Test
     runs-on: ubuntu-latest
 
@@ -61,3 +61,24 @@ jobs:
 
       - name: Print Output second
         run: echo "${{ steps.test-action-2.outputs.version }}"
+
+  test-path:
+    name: GitHub Actions Test with Path
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          path: 'test-path'
+
+      - name: Test Local Action
+        id: test-action
+        uses: hugcabbage/next-version@main
+        with:
+          mode: 'long'
+          repo_path: 'test-path'
+
+      - name: Print Output
+        run: echo "${{ steps.test-action.outputs.version }}"

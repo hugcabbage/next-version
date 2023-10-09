@@ -11,6 +11,10 @@ inputs:
     description: 'version mode'
     required: false
     default: 'short'
+  repo_path:
+    description: 'repository path'
+    required: false
+    default: '.'
 
 outputs:
   version:
