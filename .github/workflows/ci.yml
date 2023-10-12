@@ -50,7 +50,7 @@ jobs:
         uses: ./
         with:
           prefix: 'w'
-          mode: 'long'
+          mode: 3
 
       - name: Test Local Action second
         id: test-action-2
@@ -77,7 +77,7 @@ jobs:
         id: test-action
         uses: hugcabbage/next-version@main
         with:
-          mode: 'long'
+          mode: 3
           repo_path: 'test-path'
 
       - name: Print Output

@@ -2757,7 +2757,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
 const main_1 = __nccwpck_require__(399);
 const prefix = core.getInput('prefix');
-const mode = core.getInput('mode');
+const mode = Number(core.getInput('mode'));
 const repo_path = core.getInput('repo_path');
 process.chdir(repo_path);
 core.setOutput('version', (0, main_1.nextVersion)(prefix, mode));
@@ -2773,69 +2773,61 @@ core.setOutput('version', (0, main_1.nextVersion)(prefix, mode));
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.nextVersion = void 0;
 const child_process_1 = __nccwpck_require__(81);
-function vcalculate(version) {
-    const version_parts = version.split('.').map(Number);
-    if (version_parts.length === 1) {
-        return String(version_parts[0] + 1);
-    }
-    if (version_parts.slice(1).some(x => x > 9)) {
-        throw new Error('Invalid version number');
-    }
-    version_parts[version_parts.length - 1] += 1;
-    for (let i = version_parts.length - 1; i > 0; i--) {
-        if (version_parts[i] > 9) {
-            version_parts[i] = 0;
-            version_parts[i - 1] += 1;
+function vCalculate(version) {
+    const e = version.length;
+    version[e - 1] += 1;
+    for (let i = 1; i < e; i++) {
+        if (version[i] > 9) {
+            version.splice(i, e - i, ...Array(e - i).fill(0));
+            version[i - 1] += 1;
+            break;
         }
     }
-    return version_parts.join('.');
+    for (let i = e - 1; i > 0; i--) {
+        if (version[i] > 9) {
+            version[i] = 0;
+            version[i - 1] += 1;
+        }
+    }
+    return version.join('.');
 }
-function nextVersion(prefix = 'v', mode = 'short') {
-    const tags = (0, child_process_1.execSync)('git ls-remote --tags --refs origin', {
-        encoding: 'utf8'
-    })
-        .trim()
-        .split('\n');
-    if (tags.length === 0) {
-        if (mode === 'medium') {
-            return `${prefix}0.1`;
-        }
-        if (mode === 'long') {
-            return `${prefix}0.0.1`;
-        }
-        return `${prefix}1`;
-    }
-    let version;
-    if (mode === 'medium') {
-        version = [0, 0];
-    }
-    else if (mode === 'long') {
-        version = [0, 0, 0];
+function nextVersion(prefix = 'v', mode = 1, tags_data = undefined) {
+    let version = new Array(mode).fill(0);
+    let tags;
+    const e = version.length;
+    if (tags_data !== undefined) {
+        tags = tags_data.trim().split('\n');
     }
     else {
-        version = [0];
+        tags = (0, child_process_1.execSync)('git ls-remote --tags --refs origin', { encoding: 'utf8' })
+            .trim()
+            .split('\n');
     }
     for (const tag of tags) {
         const regex = new RegExp(`^${prefix}`);
-        const mtag = tag.split('/').slice(-1)[0].replace(regex, '');
-        try {
-            const mtag_parts = mtag.split('.').map(Number);
-            if (mtag_parts.length !== version.length) {
-                continue;
-            }
-            if (mtag_parts.some(x => isNaN(x))) {
-                continue;
-            }
-            if (mtag_parts > version) {
-                version = mtag_parts;
-            }
-        }
-        catch (err) {
+        const mtag = tag
+            .split('/')
+            .slice(-1)[0]
+            .replace(regex, '')
+            .split('.')
+            .map(Number);
+        if (mtag.length !== e) {
             continue;
         }
+        if (mtag.some(x => isNaN(x))) {
+            continue;
+        }
+        for (let i = 0; i < e; i++) {
+            if (mtag[i] > version[i]) {
+                version = mtag;
+                break;
+            }
+            if (mtag[i] < version[i]) {
+                break;
+            }
+        }
     }
-    const version_str = version.join('.');
-    return `${prefix}${vcalculate(version_str)}`;
+    return `${prefix}${vCalculate(version)}`;
 }
 exports.nextVersion = nextVersion;
 

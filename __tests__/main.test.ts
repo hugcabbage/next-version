@@ -1,62 +1,70 @@
-import * as fs from 'fs'
-import * as path from 'path'
+import { execSync } from 'child_process'
 
-function vcalculate(version: string): string {
-  const version_parts = version.split('.').map(Number)
-  if (version_parts.length === 1) {
-    return String(version_parts[0] + 1)
-  }
-  if (version_parts.slice(1).some(x => x > 9)) {
-    throw new Error('Invalid version number')
-  }
-  version_parts[version_parts.length - 1] += 1
-  for (let i = version_parts.length - 1; i > 0; i--) {
-    if (version_parts[i] > 9) {
-      version_parts[i] = 0
-      version_parts[i - 1] += 1
+function vCalculate(version: number[]): string {
+  const e = version.length
+  version[e - 1] += 1
+
+  for (let i = 1; i < e; i++) {
+    if (version[i] > 9) {
+      version.splice(i, e - i, ...Array(e - i).fill(0))
+      version[i - 1] += 1
+      break
     }
   }
-  return version_parts.join('.')
+
+  for (let i = e - 1; i > 0; i--) {
+    if (version[i] > 9) {
+      version[i] = 0
+      version[i - 1] += 1
+    }
+  }
+
+  return version.join('.')
 }
 
-export function nextVersion(prefix = 'v', mode = 'short'): string {
-  const filePath = path.join(__dirname, 'tags.txt')
-  const tags = fs.readFileSync(filePath, 'utf8').trim().split('\r\n')
+export function nextVersion(
+  prefix = 'v',
+  mode = 1,
+  tags_data: string | undefined = undefined
+): string {
+  let version: number[] = new Array(mode).fill(0)
+  let tags: string[]
+  const e = version.length
 
-  if (tags.length === 0) {
-    if (mode === 'medium') {
-      return `${prefix}0.1`
-    }
-    if (mode === 'long') {
-      return `${prefix}0.0.1`
-    }
-    return `${prefix}1`
-  }
-
-  let version: number[]
-  if (mode === 'medium') {
-    version = [0, 0]
-  } else if (mode === 'long') {
-    version = [0, 0, 0]
+  if (tags_data !== undefined) {
+    tags = tags_data.trim().split('\n')
   } else {
-    version = [0]
+    tags = execSync('git ls-remote --tags --refs origin', { encoding: 'utf8' })
+      .trim()
+      .split('\n')
   }
 
   for (const tag of tags) {
     const regex = new RegExp(`^${prefix}`)
-    const mtag = tag.split('/').slice(-1)[0].replace(regex, '')
-    const mtag_parts = mtag.split('.').map(Number)
-    if (mtag_parts.length !== version.length) {
+    const mtag = tag
+      .split('/')
+      .slice(-1)[0]
+      .replace(regex, '')
+      .split('.')
+      .map(Number)
+
+    if (mtag.length !== e) {
       continue
     }
-    if (mtag_parts.some(x => isNaN(x))) {
+    if (mtag.some(x => isNaN(x))) {
       continue
     }
-    if (mtag_parts > version) {
-      version = mtag_parts
+
+    for (let i = 0; i < e; i++) {
+      if (mtag[i] > version[i]) {
+        version = mtag
+        break
+      }
+      if (mtag[i] < version[i]) {
+        break
+      }
     }
   }
 
-  const version_str = version.join('.')
-  return `${prefix}${vcalculate(version_str)}`
+  return `${prefix}${vCalculate(version)}`
 }
