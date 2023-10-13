@@ -23,7 +23,7 @@ function vCalculate(version: number[]): string {
   return version.join('.')
 }
 
-export function nextVersion(
+function nextVersion(
   prefix = 'v',
   mode = 1,
   tags_data: string | undefined = undefined

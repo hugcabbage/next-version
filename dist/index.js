@@ -2751,7 +2751,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = exports.nextVersion = void 0;
+exports.run = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const child_process_1 = __nccwpck_require__(81);
 function vCalculate(version) {
@@ -2810,7 +2810,6 @@ function nextVersion(prefix = 'v', mode = 1, tags_data = undefined) {
     }
     return `${prefix}${vCalculate(version)}`;
 }
-exports.nextVersion = nextVersion;
 async function run() {
     try {
         const prefix = core.getInput('prefix');
