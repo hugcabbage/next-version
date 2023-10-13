@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import { execSync } from 'child_process'
 
 function vCalculate(version: number[]): string {
@@ -67,4 +68,17 @@ export function nextVersion(
   }
 
   return `${prefix}${vCalculate(version)}`
+}
+
+export async function run(): Promise<void> {
+  try {
+    const prefix = core.getInput('prefix')
+    const mode = Number(core.getInput('mode'))
+    const tags_data = core.getInput('tags_data')
+
+    const version = nextVersion(prefix, mode, tags_data)
+    core.setOutput('version', version)
+  } catch (error) {
+    if (error instanceof Error) core.setFailed(error.message)
+  }
 }

@@ -11,6 +11,7 @@ inputs:
     description: 'version mode'
     required: false
     default: 1
+    type: number
   repo_path:
     description: 'repository path'
     required: false

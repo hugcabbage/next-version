@@ -1,12 +1,7 @@
 /**
  * The entrypoint for the action.
  */
-import * as core from '@actions/core'
-import { nextVersion } from './main'
+import { run } from './main'
 
-const prefix = core.getInput('prefix')
-const mode = Number(core.getInput('mode'))
-const repo_path = core.getInput('repo_path')
-
-process.chdir(repo_path)
-core.setOutput('version', nextVersion(prefix, mode))
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+run()
