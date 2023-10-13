@@ -74,9 +74,10 @@ export async function run(): Promise<void> {
   try {
     const prefix = core.getInput('prefix')
     const mode = Number(core.getInput('mode'))
-    const tags_data = core.getInput('tags_data')
+    const repo_path = core.getInput('repo_path')
+    process.chdir(repo_path)
 
-    const version = nextVersion(prefix, mode, tags_data)
+    const version = nextVersion(prefix, mode)
     core.setOutput('version', version)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
