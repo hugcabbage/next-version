@@ -40,7 +40,7 @@ jobs:
         id: npm-ci-test
         run: npm run ci-test
 
-  test-action:
+  test-base:
     name: GitHub Actions Test
     runs-on: ubuntu-latest
 
@@ -49,12 +49,40 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Test Local Action
-        id: test-action
+      - name: Test Local Action first
+        id: test-action-1
         uses: ./
         with:
-          milliseconds: 1000
+          prefix: 'w'
+          mode: 3
+
+      - name: Test Local Action second
+        id: test-action-2
+        uses: ./
+
+      - name: Print Output first
+        run: echo "${{ steps.test-action-1.outputs.version }}"
+
+      - name: Print Output second
+        run: echo "${{ steps.test-action-2.outputs.version }}"
+
+  test-path:
+    name: GitHub Actions Test with Path
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          path: 'test-path'
+
+      - name: Test Local Action
+        id: test-action
+        uses: hugcabbage/next-version@main
+        with:
+          mode: 3
+          repo_path: 'test-path'
 
       - name: Print Output
-        id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+        run: echo "${{ steps.test-action.outputs.version }}"

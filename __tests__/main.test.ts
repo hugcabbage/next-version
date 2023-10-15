@@ -6,11 +6,16 @@
  * variables following the pattern `INPUT_<INPUT_NAME>`.
  */
 
+import * as fs from 'fs'
+import * as path from 'path'
 import * as core from '@actions/core'
 import * as main from '../src/main'
 
+// Read the example tags text
+const filePath = path.join(__dirname, 'tags.txt')
+const text = fs.readFileSync(filePath, 'utf8')
+
 // Mock the GitHub Actions core library
-const debugMock = jest.spyOn(core, 'debug')
 const getInputMock = jest.spyOn(core, 'getInput')
 const setFailedMock = jest.spyOn(core, 'setFailed')
 const setOutputMock = jest.spyOn(core, 'setOutput')
@@ -18,20 +23,21 @@ const setOutputMock = jest.spyOn(core, 'setOutput')
 // Mock the action's main function
 const runMock = jest.spyOn(main, 'run')
 
-// Other utilities
-const timeRegex = /^\d{2}:\d{2}:\d{2}/
-
 describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('sets the time output', async () => {
+  it('Output a one-bit version number prefixed with v', async () => {
     // Set the action's inputs as return values from core.getInput()
     getInputMock.mockImplementation((name: string): string => {
       switch (name) {
-        case 'milliseconds':
-          return '500'
+        case 'prefix':
+          return 'v'
+        case 'mode':
+          return '1'
+        case 'repo_path':
+          return '.'
         default:
           return ''
       }
@@ -41,40 +47,64 @@ describe('action', () => {
     expect(runMock).toHaveReturned()
 
     // Verify that all of the core library functions were called correctly
-    expect(debugMock).toHaveBeenNthCalledWith(1, 'Waiting 500 milliseconds ...')
-    expect(debugMock).toHaveBeenNthCalledWith(
-      2,
-      expect.stringMatching(timeRegex)
-    )
-    expect(debugMock).toHaveBeenNthCalledWith(
-      3,
-      expect.stringMatching(timeRegex)
-    )
     expect(setOutputMock).toHaveBeenNthCalledWith(
       1,
-      'time',
-      expect.stringMatching(timeRegex)
+      'version',
+      expect.stringMatching('^v')
     )
   })
 
-  it('sets a failed status', async () => {
-    // Set the action's inputs as return values from core.getInput()
+  it('Error thrown: Path error', async () => {
     getInputMock.mockImplementation((name: string): string => {
       switch (name) {
-        case 'milliseconds':
-          return 'this is not a number'
+        case 'repo_path':
+          return 'kkk'
         default:
           return ''
       }
     })
-
     await main.run()
     expect(runMock).toHaveReturned()
 
     // Verify that all of the core library functions were called correctly
     expect(setFailedMock).toHaveBeenNthCalledWith(
       1,
-      'milliseconds not a number'
+      expect.stringMatching('is not a git repository$')
     )
+  })
+
+  it('Error thrown: Length value is not a number', async () => {
+    // Set the action's inputs as return values from core.getInput()
+    getInputMock.mockImplementation((name: string): string => {
+      switch (name) {
+        case 'mode':
+          return 'ppp'
+        case 'repo_path':
+          return '.'
+        default:
+          return ''
+      }
+    })
+
+    await main.run()
+    expect(runMock).toHaveReturned()
+
+    // Verify that all of the core library functions were called correctly
+    expect(setFailedMock).toHaveBeenNthCalledWith(1, 'Mode is not a number')
+  })
+})
+
+describe('nextVersion function', () => {
+  it('The next one-bit version number is v26', () => {
+    expect(main.nextVersion('v', 1, text)).toBe('v26')
+  })
+  it('The next two-digit version number is v8.1', () => {
+    expect(main.nextVersion('v', 2, text)).toBe('v8.1')
+  })
+  it('The next three-digit version number is v18.0.0', () => {
+    expect(main.nextVersion('v', 3, text)).toBe('v18.0.0')
+  })
+  it('The next four-digit version number is v6.0.0.0', () => {
+    expect(main.nextVersion('v', 4, text)).toBe('v6.0.0.0')
   })
 })

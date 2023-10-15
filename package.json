@@ -1,16 +1,16 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
-  "version": "0.0.0",
-  "author": "",
+  "name": "next-version",
+  "description": "Calculate next version number",
+  "version": "1.0.0",
+  "author": "hugcabbage",
   "private": true,
-  "homepage": "https://github.com/actions/typescript-action",
+  "homepage": "https://github.com/hugcabbage/next-version",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/hugcabbage/next-version.git"
   },
   "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
+    "url": "https://github.com/hugcabbage/next-version/issues"
   },
   "keywords": [
     "actions",

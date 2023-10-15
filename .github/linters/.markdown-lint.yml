@@ -1,6 +1,9 @@
 # Unordered list style
 MD004:
-  style: dash
+  style: asterisk
+
+# Line length
+MD013: false
 
 # Ordered list item prefix
 MD029:
