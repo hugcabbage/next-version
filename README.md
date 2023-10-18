@@ -9,7 +9,7 @@ This action simply calculates the version number and has no semantic function. Y
 * 3, like v1.2.2, the value range is 0-9 except for the first part.
 * ...
 
-In theory, you can specify the length of the infinite length.
+In theory, you can specify an infinite length.
 
 ## Usage
 

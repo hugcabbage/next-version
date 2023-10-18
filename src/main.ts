@@ -25,21 +25,12 @@ function vCalculate(version: number[]): string {
 }
 
 export function nextVersion(
-  prefix = 'v',
-  mode = 1,
-  tags_data: string | undefined = undefined
+  prefix: string,
+  mode: number,
+  tags: string[]
 ): string {
   let version: number[] = new Array(mode).fill(0)
-  let tags: string[]
   const e = version.length
-
-  if (tags_data !== undefined) {
-    tags = tags_data.trim().split('\n')
-  } else {
-    tags = execSync('git ls-remote --tags --refs origin', { encoding: 'utf8' })
-      .trim()
-      .split('\n')
-  }
 
   for (const tag of tags) {
     const regPre = new RegExp(`^${prefix}`)
@@ -76,14 +67,23 @@ export async function run(): Promise<void> {
     const prefix = core.getInput('prefix')
 
     const mode = Number(core.getInput('mode'))
-    if (isNaN(mode)) throw new TypeError('Mode is not a number')
+    if (isNaN(mode))
+      throw new TypeError(
+        `${mode} is not a number, the length cannot be determined`
+      )
 
-    const repo_path = core.getInput('repo_path')
-    if (!fs.existsSync(`${repo_path}/.git`))
-      throw new Error(`${repo_path} is not a git repository`)
-    process.chdir(repo_path)
+    const repo = core.getInput('repo_path')
+    if (!fs.existsSync(`${repo}/.git`))
+      throw new Error(`${repo} is not a git repository`)
+    process.chdir(repo)
 
-    const version = nextVersion(prefix, mode)
+    const tags = execSync('git ls-remote --tags --refs origin', {
+      encoding: 'utf8'
+    })
+      .trim()
+      .split('\n')
+
+    const version = nextVersion(prefix, mode, tags)
     core.setOutput('version', version)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)

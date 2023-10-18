@@ -13,7 +13,7 @@ import * as main from '../src/main'
 
 // Read the example tags text
 const filePath = path.join(__dirname, 'tags.txt')
-const text = fs.readFileSync(filePath, 'utf8')
+const tags = fs.readFileSync(filePath, 'utf8').trim().split('\n')
 
 // Mock the GitHub Actions core library
 const getInputMock = jest.spyOn(core, 'getInput')
@@ -57,6 +57,10 @@ describe('action', () => {
   it('Error thrown: Path error', async () => {
     getInputMock.mockImplementation((name: string): string => {
       switch (name) {
+        case 'prefix':
+          return 'v'
+        case 'mode':
+          return '1'
         case 'repo_path':
           return 'kkk'
         default:
@@ -77,6 +81,8 @@ describe('action', () => {
     // Set the action's inputs as return values from core.getInput()
     getInputMock.mockImplementation((name: string): string => {
       switch (name) {
+        case 'prefix':
+          return 'v'
         case 'mode':
           return 'ppp'
         case 'repo_path':
@@ -90,21 +96,24 @@ describe('action', () => {
     expect(runMock).toHaveReturned()
 
     // Verify that all of the core library functions were called correctly
-    expect(setFailedMock).toHaveBeenNthCalledWith(1, 'Mode is not a number')
+    expect(setFailedMock).toHaveBeenNthCalledWith(
+      1,
+      expect.stringMatching('the length cannot be determined$')
+    )
   })
 })
 
 describe('nextVersion function', () => {
   it('The next one-bit version number is v26', () => {
-    expect(main.nextVersion('v', 1, text)).toBe('v26')
+    expect(main.nextVersion('v', 1, tags)).toBe('v26')
   })
   it('The next two-digit version number is v8.1', () => {
-    expect(main.nextVersion('v', 2, text)).toBe('v8.1')
+    expect(main.nextVersion('v', 2, tags)).toBe('v8.1')
   })
   it('The next three-digit version number is v18.0.0', () => {
-    expect(main.nextVersion('v', 3, text)).toBe('v18.0.0')
+    expect(main.nextVersion('v', 3, tags)).toBe('v18.0.0')
   })
   it('The next four-digit version number is v6.0.0.0', () => {
-    expect(main.nextVersion('v', 4, text)).toBe('v6.0.0.0')
+    expect(main.nextVersion('v', 4, tags)).toBe('v6.0.0.0')
   })
 })

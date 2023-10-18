@@ -2773,18 +2773,9 @@ function vCalculate(version) {
     }
     return version.join('.');
 }
-function nextVersion(prefix = 'v', mode = 1, tags_data = undefined) {
+function nextVersion(prefix, mode, tags) {
     let version = new Array(mode).fill(0);
-    let tags;
     const e = version.length;
-    if (tags_data !== undefined) {
-        tags = tags_data.trim().split('\n');
-    }
-    else {
-        tags = (0, child_process_1.execSync)('git ls-remote --tags --refs origin', { encoding: 'utf8' })
-            .trim()
-            .split('\n');
-    }
     for (const tag of tags) {
         const regPre = new RegExp(`^${prefix}`);
         const mtag = tag
@@ -2817,12 +2808,17 @@ async function run() {
         const prefix = core.getInput('prefix');
         const mode = Number(core.getInput('mode'));
         if (isNaN(mode))
-            throw new TypeError('Mode is not a number');
-        const repo_path = core.getInput('repo_path');
-        if (!fs.existsSync(`${repo_path}/.git`))
-            throw new Error(`${repo_path} is not a git repository`);
-        process.chdir(repo_path);
-        const version = nextVersion(prefix, mode);
+            throw new TypeError(`${mode} is not a number, the length cannot be determined`);
+        const repo = core.getInput('repo_path');
+        if (!fs.existsSync(`${repo}/.git`))
+            throw new Error(`${repo} is not a git repository`);
+        process.chdir(repo);
+        const tags = (0, child_process_1.execSync)('git ls-remote --tags --refs origin', {
+            encoding: 'utf8'
+        })
+            .trim()
+            .split('\n');
+        const version = nextVersion(prefix, mode, tags);
         core.setOutput('version', version);
     }
     catch (error) {

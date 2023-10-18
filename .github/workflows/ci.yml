@@ -79,7 +79,7 @@ jobs:
 
       - name: Test Local Action
         id: test-action
-        uses: hugcabbage/next-version@main
+        uses: ./test-path
         with:
           mode: 3
           repo_path: 'test-path'
