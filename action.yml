@@ -1,6 +1,9 @@
-name: 'next version'
+name: 'simple next version'
 description: 'calculate next version number'
 author: 'hugcabbage'
+branding:
+  icon: tag
+  color: blue
 
 inputs:
   prefix:
