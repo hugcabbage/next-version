@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import * as _ from 'lodash'
 import * as core from '@actions/core'
 import { execSync } from 'child_process'
 
@@ -33,7 +34,8 @@ export function nextVersion(
   const e = version.length
 
   for (const tag of tags) {
-    const regPre = new RegExp(`^${prefix}`)
+    const escapedPrefix = _.escapeRegExp(prefix)
+    const regPre = new RegExp(`^${escapedPrefix}`)
     const mtag = tag
       .split('/')
       .slice(-1)[0]
